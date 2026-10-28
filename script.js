@@ -214,6 +214,28 @@ function renderStreak() {
   else if (stats.current > 0) encouragement.textContent = "Every return is a decision. Keep choosing the man you are becoming.";
   else encouragement.textContent = "You do not have to be perfect. You only have to be willing to begin.";
   renderCalendar(stats);
+  renderReflectionHistory();
+}
+function renderReflectionHistory() {
+  const list = document.getElementById("reflectionList");
+  const reflections = checkins.filter(item => item.reflection.trim()).reverse();
+  document.getElementById("reflectionCount").textContent = `${reflections.length} ${reflections.length === 1 ? "reflection" : "reflections"}`;
+  document.getElementById("reflectionEmpty").hidden = reflections.length > 0;
+  const entries = document.createDocumentFragment();
+  reflections.forEach(item => {
+    const entry = document.createElement("article");
+    entry.className = "reflection-entry";
+    const date = document.createElement("time");
+    date.dateTime = item.date;
+    date.textContent = new Date(`${item.date}T12:00:00+02:00`).toLocaleDateString("en-ZA", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Johannesburg"
+    });
+    const reflection = document.createElement("p");
+    reflection.textContent = item.reflection;
+    entry.append(date, reflection);
+    entries.append(entry);
+  });
+  list.replaceChildren(entries);
 }
 function renderCalendar(stats = getStreakStats()) {
   const {year, month} = calendarCursor;
@@ -326,13 +348,18 @@ function rankLogo(image) {
 function renderAchievements(stats = getStreakStats()) {
   const challengeCount = getChallengeCount();
   const achievements = [
-    { name: "First Flame", condition: "Complete your first check-in", rank: "flame", image: "first-flame.svg", unlocked: stats.total >= 1 },
-    { name: "Disciplined", condition: "Reach a 7-day streak", rank: "disciplined", image: "disciplined.svg", unlocked: stats.best >= 7 },
-    { name: "Unshaken", condition: "Reach a 30-day streak", rank: "unshaken", image: "unshaken.svg", unlocked: stats.best >= 30 },
-    { name: "Iron Standard", condition: "Reach a 100-day streak", rank: "iron", image: "iron-standard.svg", unlocked: stats.best >= 100 },
-    { name: "Man of Action", condition: "Complete 10 daily challenges", rank: "action", image: "man-of-action.svg", unlocked: challengeCount >= 10 }
+    { name: "First Flame", condition: "Complete your first check-in", rank: "flame", image: "first-flame.svg", progress: stats.total, goal: 1, progressLabel: "check-ins" },
+    { name: "Disciplined", condition: "Reach a 7-day streak", rank: "disciplined", image: "disciplined.svg", progress: stats.best, goal: 7, progressLabel: "best streak" },
+    { name: "Unshaken", condition: "Reach a 30-day streak", rank: "unshaken", image: "unshaken.svg", progress: stats.best, goal: 30, progressLabel: "best streak" },
+    { name: "Iron Standard", condition: "Reach a 100-day streak", rank: "iron", image: "iron-standard.svg", progress: stats.best, goal: 100, progressLabel: "best streak" },
+    { name: "Man of Action", condition: "Complete 10 daily challenges", rank: "action", image: "man-of-action.svg", progress: challengeCount, goal: 10, progressLabel: "challenges" }
   ];
-  document.getElementById("achievementGrid").innerHTML = achievements.map(item => `<article class="achievement-card ${item.unlocked ? "unlocked" : "locked"}" data-rank="${item.rank}"><span class="achievement-emblem">${rankLogo(item.image)}</span><p class="achievement-name">${item.name}</p><p class="achievement-condition">${item.condition}</p><span class="achievement-state">${item.unlocked ? "UNLOCKED ✓" : "LOCKED"}</span></article>`).join("");
+  document.getElementById("achievementGrid").innerHTML = achievements.map(item => {
+    const unlocked = item.progress >= item.goal;
+    const progress = Math.min(item.progress, item.goal);
+    const percentage = Math.round(progress / item.goal * 100);
+    return `<article class="achievement-card ${unlocked ? "unlocked" : "locked"}" data-rank="${item.rank}"><span class="achievement-emblem">${rankLogo(item.image)}</span><p class="achievement-name">${item.name}</p><p class="achievement-condition">${item.condition}</p><div class="achievement-progress"><div class="achievement-progress-label"><span>${item.progressLabel}</span><span>${progress} / ${item.goal}</span></div><div class="achievement-progress-track" role="progressbar" aria-label="${item.name} progress" aria-valuemin="0" aria-valuemax="${item.goal}" aria-valuenow="${progress}"><span style="width:${percentage}%"></span></div></div><span class="achievement-state">${unlocked ? "UNLOCKED ✓" : "LOCKED"}</span></article>`;
+  }).join("");
   document.getElementById("dashboardChallengesDone").textContent = challengeCount;
 }
 function renderDashboard() {

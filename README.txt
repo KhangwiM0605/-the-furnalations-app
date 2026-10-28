@@ -48,4 +48,5 @@ INSTALL AS A FREE PHONE APP (PWA)
 - On iPhone, open the HTTPS site in Safari, tap Share, then Add to Home Screen.
 - The first online visit caches the app shell for later offline launches. Google Fonts need internet access; the site falls back to local fonts offline.
 - Saved check-ins, reflections, challenges, and bookmarks remain on the device/browser and do not sync to other devices.
+- The Daily Check-in section includes a private on-device reflection journal and progress bars toward each achievement.
 - For local development, use VS Code Live Server or another localhost server. Opening index.html directly as a file does not enable service workers or installation.
