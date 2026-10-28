@@ -1,9 +1,13 @@
-const CACHE_NAME = "furnalations-pwa-v4";
+const CACHE_NAME = "furnalations-pwa-v6";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./style.css",
   "./script.js",
+  "./login.html",
+  "./login.css",
+  "./login.js",
+  "./auth-config.js",
   "./manifest.webmanifest",
   "./assets/app-icon.svg",
   "./assets/app-icon-192.png",
@@ -45,11 +49,11 @@ self.addEventListener("fetch", event => {
         .then(response => {
           if (response.ok) {
             const copy = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put("./index.html", copy));
+              caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
           }
           return response;
         })
-        .catch(async () => (await caches.match("./index.html")) || Response.error())
+          .catch(async () => (await caches.match(request)) || (await caches.match("./index.html")) || Response.error())
     );
     return;
   }

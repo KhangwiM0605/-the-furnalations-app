@@ -9,19 +9,19 @@ How to run:
 1. Extract The_Furnalations.zip.
 2. Open the extracted folder in VS Code.
 3. Open index.html in a browser, or use the Live Server extension.
-4. You do not need npm or a backend for this starter version.
+4. You do not need npm for the static website. The optional MongoDB account API requires Node.js and the setup below.
 
 Notes:
 - Saved rules use browser localStorage on the current device/browser.
 - Google Fonts require an internet connection; fallback fonts are included.
-- This is a front-end prototype. Accounts, cloud-synced bookmarks, and user-submitted rules would need a backend/database.
+- The MongoDB account API supports sign-up and sign-in after it is configured and deployed. Check-ins, reflections, challenges, and saved rules are still device-local.
 
 
 BROTHERHOOD STREAK (NEW)
 - Open the Daily Check-in section to see current streak, personal best, total check-ins and the monthly calendar.
 - Check in once per South African calendar day (Africa/Johannesburg). An optional reflection can be saved with the check-in.
 - Data is saved in this browser using localStorage. This prototype is device/browser-specific and is not synced to other members. Clearing browser data may erase it.
-- For an app with member accounts and shared streaks, use the included supabase-schema.sql as a starting point for cloud storage. The production app should calculate and validate streaks using server/database logic, not trust browser-calculated values.
+- Account sign-in is available through the MongoDB API described below. Shared streaks and other cloud-synced progress are not implemented; production progress tracking should be validated by the server, not trusted to browser-calculated values.
 
 RUN LOCALLY
 1. Extract the ZIP.
@@ -38,7 +38,7 @@ DASHBOARD + DAILY FORGE UPGRADE
 - Daily dates use Africa/Johannesburg (South African time).
 
 APP-READY NOTE
-The streak and challenge logic is still a front-end prototype. Before a public multi-user launch, move validation to a backend/database and add authentication, database access policies, backups, and server-side date validation.
+The streak and challenge logic is still a front-end prototype. The account API is a separate starting point; progress syncing, server-side date validation, database access policies, and backups still need to be implemented before a public multi-user launch.
 
 INSTALL AS A FREE PHONE APP (PWA)
 - This project is a Progressive Web App. It can be installed from a website without paying app-store developer fees.
@@ -49,4 +49,15 @@ INSTALL AS A FREE PHONE APP (PWA)
 - The first online visit caches the app shell for later offline launches. Google Fonts need internet access; the site falls back to local fonts offline.
 - Saved check-ins, reflections, challenges, and bookmarks remain on the device/browser and do not sync to other devices.
 - The Daily Check-in section includes a private on-device reflection journal and progress bars toward each achievement.
+- Account setup (MongoDB + Node.js API)
+  1. Install Node.js 20 or newer, then run `npm install` in this folder.
+  2. Create a MongoDB Atlas database and a database user with access only to the app database. Copy `.env.example` to `.env` and set `MONGODB_URI`, `MONGODB_DB`, and a random `JWT_SECRET` of at least 32 characters (generate one with `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`). Keep `.env` private; it is ignored by Git.
+  3. In Atlas Network Access, allow connections from your API host. Avoid broad IP access when your host supports fixed outbound IPs.
+  4. Set `FRONTEND_ORIGIN` to the exact HTTPS website origin (for GitHub Pages, `https://khangwim0605.github.io`, without the repository path). Run locally with `npm start`; the API listens on port 3000 by default.
+  5. Deploy this repository as a Node web service on a host that supports Node.js. Use `npm install` as the build command and `npm start` as the start command. Set the environment variables from `.env` in the host's private dashboard; never commit them.
+  6. Set `window.FURNALATIONS_API_BASE_URL` in `auth-config.js` to the deployed API's HTTPS origin (for example `https://your-api.example.com`, with no trailing slash), then publish that frontend change.
+  7. Check `https://your-api.example.com/api/health`, then try account creation and sign-in on `login.html`.
+- Sign-up hashes passwords with bcrypt. Access tokens expire after one hour and are held in the current browser tab. Email verification and password reset are not configured.
+- The account API authenticates users; it does not yet sync check-ins, reflections, challenges, or saved rules. Those remain local to each device.
+- Authentication needs an online API; the static app shell can open offline, but sign-up and sign-in cannot work without a network connection.
 - For local development, use VS Code Live Server or another localhost server. Opening index.html directly as a file does not enable service workers or installation.

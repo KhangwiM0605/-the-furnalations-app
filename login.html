@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101010" />
+  <meta name="description" content="Sign in to The Furnalations brotherhood." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Furnalations" />
+  <title>Member sign in | The Furnalations</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="login.css" />
+</head>
+<body>
+  <div class="login-grain" aria-hidden="true"></div>
+  <main class="login-layout">
+    <section class="login-story" aria-labelledby="storyTitle">
+      <a class="login-brand" href="index.html" aria-label="The Furnalations home">
+        <span class="login-brand-mark">F<span>✦</span></span>
+        <span class="login-brand-name">THE <b>FURNALATIONS</b><small>THE BROTHERHOOD CODE</small></span>
+      </a>
+      <div class="login-story-copy">
+        <p class="login-eyebrow"><span></span> A PLACE TO RETURN TO</p>
+        <h1 id="storyTitle">Keep becoming.<br><em>One day at a time.</em></h1>
+        <p>Your progress is personal. Your journey is still your own. Come back to the work you have already begun.</p>
+      </div>
+      <div class="login-story-art" aria-hidden="true">
+        <span class="login-art-ring login-art-ring-one"></span>
+        <span class="login-art-ring login-art-ring-two"></span>
+        <span class="login-art-shield">
+          <svg viewBox="0 0 160 176" focusable="false">
+            <path d="M80 8 144 28v50c0 42-25 70-64 92-39-22-64-50-64-92V28L80 8Z"/>
+            <path d="M80 20 132 36v42c0 34-19 57-52 77-33-20-52-43-52-77V36l52-16Z"/>
+            <path class="login-art-flame" d="M80 52c-2 17-22 24-22 43a22 22 0 0 0 44 0c0-10-6-18-14-26 0 11-6 17-10 19 4-15-2-25 2-36Z"/>
+            <path class="login-art-flame" d="M80 89c-6 6-10 12-10 18a10 10 0 0 0 20 0c0-6-4-12-10-18Z"/>
+          </svg>
+        </span>
+      </div>
+      <a class="back-home" href="index.html"><span aria-hidden="true">←</span> Back to the brotherhood</a>
+    </section>
+
+    <section class="login-panel" aria-labelledby="loginTitle">
+      <div class="login-card">
+        <p class="login-eyebrow">YOUR NEXT CHAPTER</p>
+        <h2 id="loginTitle">Welcome back.</h2>
+        <p class="login-intro" id="loginIntro">Sign in to return to your journey.</p>
+
+        <div class="auth-tabs" role="tablist" aria-label="Account options">
+          <button class="auth-tab active" id="signInTab" type="button" role="tab" aria-selected="true" aria-controls="authForm" data-mode="signin">Sign in</button>
+          <button class="auth-tab" id="createAccountTab" type="button" role="tab" aria-selected="false" aria-controls="authForm" data-mode="signup">Create account</button>
+        </div>
+
+        <form id="authForm" novalidate>
+          <div class="signup-name-field" id="signupNameField" hidden>
+            <label class="field-label" for="displayName">Name</label>
+            <input class="auth-input" id="displayName" name="displayName" type="text" placeholder="How should we greet you?" autocomplete="name" maxlength="60">
+          </div>
+          <label class="field-label" for="email">Email address</label>
+          <input class="auth-input" id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+
+          <div class="password-label-row">
+            <label class="field-label" for="password">Password</label>
+            <button class="text-button forgot-password" id="forgotPassword" type="button">Forgot password?</button>
+          </div>
+          <div class="password-field">
+            <input class="auth-input" id="password" name="password" type="password" placeholder="At least 8 characters" autocomplete="current-password" minlength="8" required>
+            <button class="password-toggle" id="passwordToggle" type="button" aria-label="Show password" aria-pressed="false">SHOW</button>
+          </div>
+
+          <div class="password-field confirm-field" id="confirmField" hidden>
+            <label class="field-label" for="confirmPassword">Confirm password</label>
+            <input class="auth-input" id="confirmPassword" name="confirmPassword" type="password" placeholder="Enter your password again" autocomplete="new-password" minlength="8">
+          </div>
+
+          <p class="session-note" id="sessionNote">Your session stays in this browser tab and expires after one hour.</p>
+
+          <button class="auth-submit" id="authSubmit" type="submit">Sign in <span aria-hidden="true">↗</span></button>
+          <p class="auth-feedback" id="authFeedback" role="status" aria-live="polite"></p>
+        </form>
+
+        <section class="signed-in-panel" id="signedInPanel" aria-live="polite" hidden>
+          <p class="signed-in-message" id="signedInMessage"></p>
+          <a class="auth-submit continue-link" href="index.html">Continue to the brotherhood <span aria-hidden="true">↗</span></a>
+          <button class="text-button sign-out-button" id="signOutButton" type="button">Sign out</button>
+        </section>
+
+        <aside class="demo-notice">
+          <span class="demo-notice-icon" aria-hidden="true">i</span>
+          <p><strong>Private account</strong><br>When connected, passwords are hashed by the account server. Never enter your database password on this page.</p>
+        </aside>
+        <p class="login-privacy">Account sign-in is separate from the on-device reflection journal. Personal progress sync is not connected yet.</p>
+      </div>
+    </section>
+  </main>
+  <script src="auth-config.js"></script>
+  <script src="login.js"></script>
+</body>
+</html>
