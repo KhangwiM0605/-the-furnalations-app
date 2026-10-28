@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101010" />
+  <meta name="description" content="The Furnalations — forged by fire, bound by brotherhood. A digital code for heartbreak, loyalty, faith, discipline, and growth." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Furnalations" />
+  <title>The Furnalations | The Brotherhood Code</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="The Furnalations home">
+      <span class="brand-mark">F<span>✦</span></span>
+      <span class="brand-name">THE <b>FURNALATIONS</b><small>THE BROTHERHOOD CODE</small></span>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button>
+    <nav class="nav" id="mainNav">
+      <a href="#dashboard">Dashboard</a>
+      <a href="#book">The Book</a>
+      <a href="#streak">Daily Check-in</a>
+      <a href="#forge">The Forge</a>
+      <a href="#chapters">Chapters</a>
+      <a href="#letters">Letters</a>
+      <a href="#oath">The Oath</a>
+    </nav>
+    <a class="header-cta" href="#book">Enter the code <span>↗</span></a>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="eyebrow-line"></span> A CODE FOR THE BROTHERHOOD</p>
+        <h1>Forged by fire.<br><em>Bound by brotherhood.</em><span class="hero-subline">Led by God.</span></h1>
+        <p class="hero-text">For the men who have loved deeply, lost quietly, carried burdens, and still choose to become better.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#book">Open the book <span>↗</span></a>
+          <button class="button button-quiet" id="heroRandom">Give me a rule <span>✳</span></button>
+          <button class="button button-quiet" id="installApp" type="button" hidden>Install app <span>↓</span></button>
+        </div>
+        <div class="hero-note"><span class="status-dot"></span> A living code. Written through experience.</div>
+      </div>
+      <div class="hero-art" aria-label="A glowing ember representing strength formed through hardship">
+        <div class="ring ring-one"></div><div class="ring ring-two"></div>
+        <div class="ember">F</div>
+        <div class="art-caption"><span>VOL. 001</span><span>EST. IN THE FIRE</span></div>
+        <div class="vertical-label">PAIN · PURPOSE · BROTHERHOOD</div>
+      </div>
+      <div class="hero-bottom"><span>01 / THE BEGINNING</span><span>SCROLL TO DISCOVER ↓</span></div>
+    </section>
+
+    <section class="manifesto section-pad">
+      <p class="eyebrow">A NOTE TO EVERY BROTHER</p>
+      <blockquote>“This book was not written to teach a man how to stop feeling. It was written to teach him how to <em>feel without losing himself.</em>”</blockquote>
+      <p class="manifesto-small">You are allowed to be human. You are responsible for what you build from what hurt you.</p>
+    </section>
+
+    <section class="dashboard-section section-pad" id="dashboard">
+      <div class="section-heading">
+        <div><p class="eyebrow">YOUR PATH · YOUR RESPONSIBILITY</p><h2>The brotherhood <em>dashboard.</em></h2></div>
+        <p class="section-intro">Small choices, repeated with purpose, shape the man you are becoming.</p>
+      </div>
+      <div class="dashboard-grid">
+        <article class="dashboard-stat"><span class="dashboard-stat-icon">♨</span><span class="dashboard-stat-label">CURRENT STREAK</span><strong><span id="dashboardCurrentStreak">0</span> <small>days</small></strong><p>Keep showing up, one day at a time.</p></article>
+        <article class="dashboard-stat"><span class="dashboard-stat-icon">✦</span><span class="dashboard-stat-label">TOTAL CHECK-INS</span><strong id="dashboardTotalCheckins">0</strong><p>Every honest return counts.</p></article>
+        <article class="dashboard-stat"><span class="dashboard-stat-icon">⚒</span><span class="dashboard-stat-label">CHALLENGES COMPLETED</span><strong id="dashboardChallengesDone">0</strong><p>Actions taken beyond intention.</p></article>
+      </div>
+      <article class="daily-forge-card" id="forge">
+        <div class="forge-art" aria-hidden="true"><span>F</span></div>
+        <div class="forge-copy">
+          <p class="eyebrow">THE FORGE · TODAY'S CHALLENGE</p>
+          <p class="forge-day" id="challengeDate">TODAY'S ASSIGNMENT</p>
+          <h3 id="challengeTitle">Keep your word.</h3>
+          <p id="challengeDescription">Choose one promise you have made to yourself and take a practical step to honour it today.</p>
+          <p class="forge-scripture" id="challengeScripture">“Let your yea be yea.” — Matthew 5:37 (KJV)</p>
+          <button class="button button-primary" id="completeChallenge" type="button">Mark challenge complete <span>↗</span></button>
+          <p class="challenge-status" id="challengeStatus" aria-live="polite">One meaningful action is enough to begin.</p>
+        </div>
+      </article>
+      <div class="dashboard-daily-word"><span class="daily-word-mark">✦</span><div><p class="eyebrow">SCRIPTURE TO CARRY WITH YOU</p><p class="daily-word-verse" id="dailyVerse">“But seek ye first the kingdom of God, and his righteousness.”</p><p class="daily-word-reference" id="dailyVerseReference">MATTHEW 6:33 · KJV</p></div></div>
+    </section>
+
+    <section class="book-section section-pad" id="book">
+      <div class="section-heading">
+        <div><p class="eyebrow">THE BOOK OF RULES</p><h2>Lessons the fire <em>left behind.</em></h2></div>
+        <p class="section-intro">Read slowly. Keep what serves you. Live what you learn.</p>
+      </div>
+      <div class="book-tools">
+        <label class="search-box"><span>⌕</span><input type="search" id="ruleSearch" placeholder="Search the code..." aria-label="Search rules"></label>
+        <button class="filter-btn active" data-filter="all">All rules</button>
+        <button class="filter-btn" data-filter="heartbreak">Heartbreak</button>
+        <button class="filter-btn" data-filter="brotherhood">Brotherhood</button>
+        <button class="filter-btn" data-filter="discipline">Discipline</button>
+        <button class="filter-btn" data-filter="faith">Faith</button>
+        <button class="filter-btn saved-filter" data-filter="saved">♡ Saved <span id="savedCount">0</span></button>
+      </div>
+      <div class="rules-grid" id="rulesGrid">
+        <article class="rule-card featured" data-category="faith">
+          <div class="rule-top"><span>RULE 001</span><span class="rule-symbol">✳</span></div>
+          <p class="rule-category">FAITH &amp; PURPOSE</p>
+          <h3>Keep God above all.</h3>
+          <p class="rule-quote">“Never allow the pursuit of a woman, the weight of heartbreak, the hunger for success, or the opinions of men to take the place of God in your life. Before you seek a woman’s heart, seek God’s presence. Before you chase your purpose, seek His direction. And when life brings you to your knees, let it be before the One who can restore what the world could never give you. A man grounded in God may bend beneath the pressure of life, but he will never have to walk through the fire alone.”</p>
+          <div class="rule-bottom"><span>READ · REFLECT · RISE</span><button class="save-rule" aria-label="Save rule 1" data-id="1">♡</button></div>
+        </article>
+        <article class="rule-card" data-category="heartbreak">
+          <div class="rule-top"><span>RULE 002</span><span class="rule-symbol">↗</span></div>
+          <p class="rule-category">HEARTBREAK CODE</p>
+          <h3>Missing her is not a reason to return.</h3>
+          <p class="rule-quote">“Your heart can miss what your peace had to escape. Let both truths exist without letting loneliness make the decision.”</p>
+          <div class="rule-bottom"><span>READ · REFLECT · RISE</span><button class="save-rule" aria-label="Save rule 2" data-id="2">♡</button></div>
+        </article>
+        <article class="rule-card" data-category="discipline">
+          <div class="rule-top"><span>RULE 003</span><span class="rule-symbol">✦</span></div>
+          <p class="rule-category">THE MAN WITHIN</p>
+          <h3>Keep the promises you make to yourself.</h3>
+          <p class="rule-quote">“Self-respect grows quietly each time you do what you said you would do, especially when nobody is watching.”</p>
+          <div class="rule-bottom"><span>READ · REFLECT · RISE</span><button class="save-rule" aria-label="Save rule 3" data-id="3">♡</button></div>
+        </article>
+        <article class="rule-card" data-category="brotherhood">
+          <div class="rule-top"><span>RULE 004</span><span class="rule-symbol">✳</span></div>
+          <p class="rule-category">BROTHERHOOD</p>
+          <h3>Be a safe place, not another battle.</h3>
+          <p class="rule-quote">“A real brother does not make you earn the right to be honest. He listens without turning your wounds into a weakness.”</p>
+          <div class="rule-bottom"><span>READ · REFLECT · RISE</span><button class="save-rule" aria-label="Save rule 4" data-id="4">♡</button></div>
+        </article>
+        <article class="rule-card" data-category="heartbreak">
+          <div class="rule-top"><span>RULE 005</span><span class="rule-symbol">↗</span></div>
+          <p class="rule-category">HEARTBREAK CODE</p>
+          <h3>Heal without becoming cruel.</h3>
+          <p class="rule-quote">“One person's inability to love you well is not permission to punish the next person who tries.”</p>
+          <div class="rule-bottom"><span>READ · REFLECT · RISE</span><button class="save-rule" aria-label="Save rule 5" data-id="5">♡</button></div>
+        </article>
+        <article class="rule-card" data-category="faith">
+          <div class="rule-top"><span>RULE 006</span><span class="rule-symbol">✦</span></div>
+          <p class="rule-category">FAITH & PURPOSE</p>
+          <h3>Do not confuse a difficult season with a finished story.</h3>
+          <p class="rule-quote">“The fire may change you, but it does not get to write the final chapter. Keep walking with faith and wisdom.”</p>
+          <div class="rule-bottom"><span>READ · REFLECT · RISE</span><button class="save-rule" aria-label="Save rule 6" data-id="6">♡</button></div>
+        </article>
+        <article class="rule-card" data-category="discipline">
+          <div class="rule-top"><span>RULE 007</span><span class="rule-symbol">✳</span></div>
+          <p class="rule-category">THE MAN WITHIN</p>
+          <h3>Discipline is self-respect in action.</h3>
+          <p class="rule-quote">“Build a life you do not constantly need to escape from. Start small, stay honest, and keep showing up.”</p>
+          <div class="rule-bottom"><span>READ · REFLECT · RISE</span><button class="save-rule" aria-label="Save rule 7" data-id="7">♡</button></div>
+        </article>
+        <article class="rule-card" data-category="brotherhood">
+          <div class="rule-top"><span>RULE 008</span><span class="rule-symbol">↗</span></div>
+          <p class="rule-category">BROTHERHOOD</p>
+          <h3>Celebrate your brother without competing with him.</h3>
+          <p class="rule-quote">“His progress is not proof of your failure. There is room at the table for every man who is willing to grow.”</p>
+          <div class="rule-bottom"><span>READ · REFLECT · RISE</span><button class="save-rule" aria-label="Save rule 8" data-id="8">♡</button></div>
+        </article>
+      </div>
+      <p class="empty-state" id="emptyState" hidden>No rules found. Try another search or category.</p>
+      <div class="random-panel" id="randomPanel">
+        <div><p class="eyebrow">WHEN YOU NEED A REMINDER</p><h3 id="randomTitle">Never let pain introduce you to yourself.</h3><p id="randomText">You were somebody before they loved you, and you remain somebody after they leave. Their departure is not the end of your story.</p></div>
+        <button class="button button-outline" id="randomButton">Another rule ↻</button>
+      </div>
+    </section>
+
+
+    <section class="streak-section section-pad" id="streak">
+      <div class="section-heading">
+        <div><p class="eyebrow">SHOW UP FOR YOURSELF</p><h2>The daily <em>check-in.</em></h2></div>
+        <p class="section-intro">Consistency is built one honest day at a time. Check in, reflect, and keep moving forward.</p>
+      </div>
+      <div class="streak-layout">
+        <article class="streak-card streak-main-card">
+          <div class="streak-card-top"><span class="streak-flame" aria-hidden="true">♨</span><span class="streak-kicker">YOUR CURRENT STREAK</span></div>
+          <div class="streak-number-line"><strong id="currentStreak">0</strong><span>days</span></div>
+          <p class="streak-status" id="streakStatus">Your first check-in starts here.</p>
+          <div class="streak-stats">
+            <div><span class="stat-value" id="bestStreak">0</span><span class="stat-label">PERSONAL BEST</span></div>
+            <div><span class="stat-value" id="totalCheckins">0</span><span class="stat-label">TOTAL CHECK-INS</span></div>
+          </div>
+          <label class="reflection-label" for="dailyReflection">A thought for today <span>OPTIONAL</span></label>
+          <textarea id="dailyReflection" rows="3" maxlength="500" placeholder="What did you learn, overcome, or thank God for today?"></textarea>
+          <button class="button button-primary checkin-button" id="checkinButton" type="button">Check in for today <span>↗</span></button>
+          <p class="checkin-note" id="checkinNote">One check-in per day · Days follow South African time.</p>
+        </article>
+        <article class="streak-card calendar-card">
+          <div class="calendar-heading"><div><p class="streak-kicker">YOUR JOURNEY</p><h3 id="calendarMonth">Month Year</h3></div><div class="calendar-controls"><button type="button" id="prevMonth" aria-label="Previous month">←</button><button type="button" id="nextMonth" aria-label="Next month">→</button></div></div>
+          <div class="calendar-grid calendar-weekdays" aria-hidden="true"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div>
+          <div class="calendar-grid" id="checkinCalendar" aria-label="Monthly check-in calendar"></div>
+          <div class="calendar-legend"><span><i class="legend-dot checked"></i> Checked in</span><span><i class="legend-dot today"></i> Today</span></div>
+          <div class="streak-encouragement"><span>✦</span><p id="streakEncouragement">You do not have to be perfect. You only have to be willing to begin.</p></div>
+        </article>
+      </div>
+      <div class="achievement-heading"><div><p class="eyebrow">EARNED THROUGH CONSISTENCY</p><h3>Marks of the <em>journey.</em></h3></div><p class="section-intro">These are reminders of your effort, never a measure of your worth.</p></div>
+      <div class="achievement-grid" id="achievementGrid" aria-live="polite">
+        <article class="achievement-card locked" data-rank="flame"><span class="achievement-emblem"><svg viewBox="0 0 80 82" aria-hidden="true"><path class="rank-shield" d="M40 4 68 14v23c0 18-11 31-28 41C23 68 12 55 12 37V14L40 4Z"/><path class="rank-inner" d="m40 10 22 8v19c0 14-8 25-22 34-14-9-22-20-22-34V18l22-8Z"/><path class="rank-icon" d="M40 25c-1 8-11 11-11 21a11 11 0 0 0 22 0c0-5-3-9-7-13 0 6-3 8-5 9 2-7-1-12 1-17Z M40 45c-3 3-5 6-5 9a5 5 0 0 0 10 0c0-3-2-6-5-9Z"/><circle class="rank-detail" cx="40" cy="16" r="1.5"/><circle class="rank-detail" cx="22" cy="23" r="1"/><circle class="rank-detail" cx="58" cy="23" r="1"/></svg></span><p class="achievement-name">First Flame</p><p class="achievement-condition">Complete your first check-in</p><span class="achievement-state">LOCKED</span></article>
+        <article class="achievement-card locked" data-rank="disciplined"><span class="achievement-emblem"><svg viewBox="0 0 80 82" aria-hidden="true"><path class="rank-shield" d="M40 4 68 14v23c0 18-11 31-28 41C23 68 12 55 12 37V14L40 4Z"/><path class="rank-inner" d="m40 10 22 8v19c0 14-8 25-22 34-14-9-22-20-22-34V18l22-8Z"/><path class="rank-icon" d="M40 26 44 35l10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1 4-9Z"/><circle class="rank-detail" cx="40" cy="16" r="1.5"/><circle class="rank-detail" cx="22" cy="23" r="1"/><circle class="rank-detail" cx="58" cy="23" r="1"/></svg></span><p class="achievement-name">Disciplined</p><p class="achievement-condition">Reach a 7-day streak</p><span class="achievement-state">LOCKED</span></article>
+        <article class="achievement-card locked" data-rank="unshaken"><span class="achievement-emblem"><svg viewBox="0 0 80 82" aria-hidden="true"><path class="rank-shield" d="M40 4 68 14v23c0 18-11 31-28 41C23 68 12 55 12 37V14L40 4Z"/><path class="rank-inner" d="m40 10 22 8v19c0 14-8 25-22 34-14-9-22-20-22-34V18l22-8Z"/><path class="rank-icon" d="m40 25 13 8v14l-13 8-13-8V33l13-8Z M40 33l6 4v7l-6 4-6-4v-7l6-4Z"/><circle class="rank-detail" cx="40" cy="16" r="1.5"/><circle class="rank-detail" cx="22" cy="23" r="1"/><circle class="rank-detail" cx="58" cy="23" r="1"/></svg></span><p class="achievement-name">Unshaken</p><p class="achievement-condition">Reach a 30-day streak</p><span class="achievement-state">LOCKED</span></article>
+        <article class="achievement-card locked" data-rank="iron"><span class="achievement-emblem"><svg viewBox="0 0 80 82" aria-hidden="true"><path class="rank-shield" d="M40 4 68 14v23c0 18-11 31-28 41C23 68 12 55 12 37V14L40 4Z"/><path class="rank-inner" d="m40 10 22 8v19c0 14-8 25-22 34-14-9-22-20-22-34V18l22-8Z"/><path class="rank-icon" d="M27 33h26l-3 8H30l-3-8Z M31 41h18l-2 12H33l-2-12Z M24 29h32 M36 25l4 4 4-4"/><circle class="rank-detail" cx="40" cy="16" r="1.5"/><circle class="rank-detail" cx="22" cy="23" r="1"/><circle class="rank-detail" cx="58" cy="23" r="1"/></svg></span><p class="achievement-name">Iron Standard</p><p class="achievement-condition">Reach a 100-day streak</p><span class="achievement-state">LOCKED</span></article>
+        <article class="achievement-card locked" data-rank="action"><span class="achievement-emblem"><svg viewBox="0 0 80 82" aria-hidden="true"><path class="rank-shield" d="M40 4 68 14v23c0 18-11 31-28 41C23 68 12 55 12 37V14L40 4Z"/><path class="rank-inner" d="m40 10 22 8v19c0 14-8 25-22 34-14-9-22-20-22-34V18l22-8Z"/><path class="rank-icon" d="m31 29 20 20 M28 33l9-9 6 6-9 9 M46 46l7-7 5 5-7 7 M30 53l-5 5"/><circle class="rank-detail" cx="40" cy="16" r="1.5"/><circle class="rank-detail" cx="22" cy="23" r="1"/><circle class="rank-detail" cx="58" cy="23" r="1"/></svg></span><p class="achievement-name">Man of Action</p><p class="achievement-condition">Complete 10 daily challenges</p><span class="achievement-state">LOCKED</span></article>
+      </div>
+      <p class="streak-privacy"><span>LOCAL PROTOTYPE</span> Your check-ins are saved in this browser on this device. They are not shared with other brothers yet. A shared account and cloud database can be added when you are ready to launch the app.</p>
+    </section>
+
+    <section class="chapters-section section-pad" id="chapters">
+      <div class="section-heading">
+        <div><p class="eyebrow">THE CONTENTS</p><h2>Choose your <em>chapter.</em></h2></div>
+        <p class="section-intro">Different battles. One brotherhood. A code to return to.</p>
+      </div>
+      <div class="chapter-list">
+        <button class="chapter-row" data-chapter="heartbreak"><span class="chapter-number">01</span><span class="chapter-name">The Heartbreak Code</span><span class="chapter-desc">Love, loss & self-respect</span><span class="chapter-arrow">↗</span></button>
+        <button class="chapter-row" data-chapter="brotherhood"><span class="chapter-number">02</span><span class="chapter-name">The Brotherhood Code</span><span class="chapter-desc">Loyalty, trust & brotherhood</span><span class="chapter-arrow">↗</span></button>
+        <button class="chapter-row" data-chapter="discipline"><span class="chapter-number">03</span><span class="chapter-name">The Man Within</span><span class="chapter-desc">Discipline, purpose & growth</span><span class="chapter-arrow">↗</span></button>
+        <button class="chapter-row" data-chapter="faith"><span class="chapter-number">04</span><span class="chapter-name">Faith in the Fire</span><span class="chapter-desc">Faith, patience & perspective</span><span class="chapter-arrow">↗</span></button>
+        <button class="chapter-row" data-chapter="all"><span class="chapter-number">05</span><span class="chapter-name">Letters to My Brothers</span><span class="chapter-desc">Words for the days you feel alone</span><span class="chapter-arrow">↗</span></button>
+      </div>
+    </section>
+
+    <section class="letters-section section-pad" id="letters">
+      <div class="letter-label"><span class="letter-icon">✉</span><p class="eyebrow">LETTERS TO MY BROTHERS · 001</p></div>
+      <div class="letter-content">
+        <h2>To the brother who keeps saying, <em>“I'm fine.”</em></h2>
+        <p>I hope you know that you do not have to carry every burden alone. You can be grateful for your life and still admit that it is heavy. You can be strong and still need a place to rest.</p>
+        <p>Do not measure your worth by who stayed, who left, or how quickly you recovered. You are still becoming. Take responsibility for your healing, ask for help when you need it, and give yourself permission to begin again.</p>
+        <p>Keep building the man you want to become, even when nobody is clapping. And when your brother is the one struggling, be the person who reminds him that he does not have to face the fire alone.</p>
+        <div class="letter-signoff">With respect, <span>one brother to another.</span></div>
+      </div>
+    </section>
+
+    <section class="oath-section section-pad" id="oath">
+      <p class="eyebrow">THE FURNALATIONS · OUR OATH</p>
+      <h2>We will not let the fire<br>make us <em>heartless.</em></h2>
+      <div class="oath-grid">
+        <p><span>01</span> We will choose honesty over pretending.</p>
+        <p><span>02</span> We will protect our peace without losing our compassion.</p>
+        <p><span>03</span> We will hold each other accountable without humiliation.</p>
+        <p><span>04</span> We will honour loyalty, boundaries, and truth.</p>
+        <p><span>05</span> We will grow through pain, not build an identity around it.</p>
+        <p><span>06</span> We will ask for help and offer it without shame.</p>
+      </div>
+      <p class="oath-ending">FORGED BY FIRE. BOUND BY BROTHERHOOD.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a class="brand footer-brand" href="#home"><span class="brand-mark">F<span>✦</span></span><span class="brand-name">THE <b>FURNALATIONS</b><small>THE BROTHERHOOD CODE</small></span></a>
+    <p>A reminder that becoming a better man is a lifelong practice.</p>
+    <a href="#home" class="back-top">BACK TO TOP ↑</a>
+    <small class="copyright"><span>© <span id="year"></span> THE FURNALATIONS · BUILT IN THE FIRE.</span><span class="creator-credit">MADE BY KHANGWELO SEAN MAJA</span></small>
+  </footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
+</body>
+</html>

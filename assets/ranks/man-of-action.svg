@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 176">
+  <defs>
+    <linearGradient id="metal" x1="20" y1="12" x2="140" y2="160" gradientUnits="userSpaceOnUse"><stop stop-color="#f8e4bc"/><stop offset=".3" stop-color="#bd9b6e"/><stop offset=".62" stop-color="#68523a"/><stop offset="1" stop-color="#edcca0"/></linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="matrix(0 60 -49 0 80 94)" gradientUnits="userSpaceOnUse"><stop stop-color="#bd9b6e" stop-opacity=".38"/><stop offset="1" stop-color="#282018" stop-opacity="0"/></radialGradient>
+    <linearGradient id="plate" x1="40" y1="26" x2="124" y2="146" gradientUnits="userSpaceOnUse"><stop stop-color="#413324"/><stop offset=".5" stop-color="#191715"/><stop offset="1" stop-color="#2d251c"/></linearGradient>
+  </defs>
+  <path d="M80 8 144 28v50c0 42-25 70-64 92-39-22-64-50-64-92V28L80 8Z" fill="url(#plate)" stroke="url(#metal)" stroke-width="3"/>
+  <path d="M80 17 135 34v44c0 36-21 61-55 81-34-20-55-45-55-81V34l55-17Z" fill="url(#glow)" stroke="#d5b68b" stroke-opacity=".62" stroke-width="1.2"/>
+  <path d="m80 27 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1 3-6Zm-49 14 2 4 4 1-3 3 1 4-4-2-3 2 1-4-3-3 4-1 1-4Zm98 0 2 4 4 1-3 3 1 4-4-2-3 2 1-4-3-3 4-1 1-4Z" fill="#f2ddba" opacity=".86"/>
+  <path d="m58 75 13-13 9 9-13 13-9-9Zm31 18 13-13 9 9-13 13-9-9Z" fill="#c5a77c" fill-opacity=".28" stroke="url(#metal)" stroke-linejoin="round" stroke-width="3"/>
+  <path d="m65 82 31 31M69 62l29 29" stroke="#e9d1ac" stroke-linecap="round" stroke-width="5"/>
+  <path d="m58 74 9 9m22 10 9 9" stroke="#fff0d6" stroke-linecap="round" stroke-width="2"/>
+  <path d="M55 128h50M61 135h38" stroke="#d7bb93" stroke-linecap="round" stroke-opacity=".62"/>
+  <circle cx="80" cy="151" r="3" fill="#f2dfbe"/>
+</svg>
