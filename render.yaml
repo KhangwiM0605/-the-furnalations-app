@@ -17,3 +17,9 @@ services:
         generateValue: true
       - key: FRONTEND_ORIGIN
         value: https://khangwim0605.github.io
+      - key: FRONTEND_URL
+        value: https://khangwim0605.github.io/-the-furnalations-app/
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false

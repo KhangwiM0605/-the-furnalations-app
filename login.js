@@ -14,6 +14,11 @@ const authTabs = document.querySelector(".auth-tabs");
 const signedInPanel = document.getElementById("signedInPanel");
 const signedInMessage = document.getElementById("signedInMessage");
 const signOutButton = document.getElementById("signOutButton");
+const verificationPanel = document.getElementById("verificationPanel");
+const verificationMessage = document.getElementById("verificationMessage");
+const verificationEmail = document.getElementById("verificationEmail");
+const resendVerification = document.getElementById("resendVerification");
+const returnToSignIn = document.getElementById("returnToSignIn");
 const apiBaseUrl = (window.FURNALATIONS_API_BASE_URL
   || (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? "http://localhost:3000" : ""))
   .replace(/\/+$/, "");
@@ -28,6 +33,9 @@ function showFeedback(message, kind = "") {
 function setAuthMode(mode) {
   authMode = mode;
   const isSignUp = mode === "signup";
+  authForm.hidden = false;
+  authTabs.hidden = false;
+  verificationPanel.hidden = true;
   document.querySelectorAll(".auth-tab").forEach(tab => {
     const active = tab.dataset.mode === mode;
     tab.classList.toggle("active", active);
@@ -57,10 +65,28 @@ function setAuthMode(mode) {
 function showSignedIn(user) {
   authForm.hidden = true;
   authTabs.hidden = true;
+  verificationPanel.hidden = true;
   signedInPanel.hidden = false;
   loginTitle.textContent = "Welcome, " + user.displayName + ".";
   loginIntro.textContent = "Your account is ready.";
   signedInMessage.textContent = "Signed in as " + user.email + ".";
+  showFeedback("");
+}
+
+function showVerificationPanel(email, message, verified = false) {
+  authForm.hidden = true;
+  authTabs.hidden = true;
+  signedInPanel.hidden = true;
+  passwordInput.value = "";
+  confirmPasswordInput.value = "";
+  verificationPanel.hidden = false;
+  verificationEmail.value = email || "";
+  verificationEmail.disabled = verified;
+  resendVerification.hidden = verified;
+  returnToSignIn.textContent = verified ? "Continue to sign in" : "Return to sign in";
+  loginTitle.textContent = verified ? "Email verified." : "Check your inbox.";
+  loginIntro.textContent = verified ? "Your account is ready." : "One quick step before you can sign in.";
+  verificationMessage.textContent = message;
   showFeedback("");
 }
 
@@ -99,7 +125,9 @@ async function requestApi(path, options = {}) {
     const fieldErrors = Array.isArray(result?.fields)
       ? result.fields.map(field => `${field.field}: ${field.message}`).join(" ")
       : "";
-    throw new Error([result?.error || "The account server could not complete that request.", fieldErrors].filter(Boolean).join(" "));
+    const error = new Error([result?.error || "The account server could not complete that request.", fieldErrors].filter(Boolean).join(" "));
+    error.code = result?.code;
+    throw error;
   }
   if (!result) {
     throw new Error("The account server returned an invalid response.");
@@ -162,6 +190,10 @@ authForm.addEventListener("submit", async event => {
       method: "POST",
       body: JSON.stringify(request)
     });
+    if (result.verificationRequired) {
+      showVerificationPanel(request.email, "Your account was created. Open the verification link we sent to your email address before signing in.");
+      return;
+    }
     if (!result.accessToken || !result.user || !result.expiresIn) {
       throw new Error("The account server returned an incomplete sign-in session.");
     }
@@ -173,10 +205,42 @@ authForm.addEventListener("submit", async event => {
     setAuthMode("signin");
     showSignedIn(result.user);
   } catch (error) {
+    if (error.code === "EMAIL_NOT_VERIFIED" || error.code === "VERIFICATION_EMAIL_FAILED") {
+      showVerificationPanel(request.email, error.message);
+      return;
+    }
     showFeedback(error.message || "Sign-in failed. Please try again.", "error");
   } finally {
     submitButton.disabled = false;
   }
+});
+
+resendVerification.addEventListener("click", async () => {
+  showFeedback("");
+  if (!verificationEmail.reportValidity()) return;
+
+  resendVerification.disabled = true;
+  try {
+    const result = await requestApi("/api/auth/resend-verification", {
+      method: "POST",
+      body: JSON.stringify({ email: verificationEmail.value.trim() })
+    });
+    verificationMessage.textContent = result.message;
+    showFeedback("");
+  } catch (error) {
+    showFeedback(error.message || "Could not request a verification email. Please try again.", "error");
+  } finally {
+    resendVerification.disabled = false;
+  }
+});
+
+returnToSignIn.addEventListener("click", () => {
+  const email = verificationEmail.value;
+  setAuthMode("signin");
+  document.getElementById("email").value = email;
+  loginTitle.textContent = "Welcome back.";
+  loginIntro.textContent = "Sign in to return to your journey.";
+  document.getElementById("email").focus();
 });
 
 signOutButton.addEventListener("click", () => {
@@ -216,7 +280,30 @@ async function restoreSession() {
   }
 }
 
-restoreSession();
+async function handleVerificationLink() {
+  const params = new URLSearchParams(location.hash.slice(1));
+  const token = params.get("verify");
+  if (!token) return false;
+
+  history.replaceState(null, "", location.pathname + location.search);
+  try {
+    await requestApi("/api/auth/verify-email", {
+      method: "POST",
+      body: JSON.stringify({ token })
+    });
+    showVerificationPanel("", "Your email address is verified. You can now sign in.", true);
+  } catch (error) {
+    showVerificationPanel("", error.message || "This verification link could not be used. You can request another email below.");
+  }
+  return true;
+}
+
+handleVerificationLink().then(handled => {
+  if (!handled) return restoreSession();
+}).catch(error => {
+  console.error("Could not process the email verification link:", error);
+  showFeedback("Could not verify this email address. Please try again.", "error");
+});
 
 if ("serviceWorker" in navigator && window.isSecureContext) {
   navigator.serviceWorker.register("./sw.js").catch(error => {

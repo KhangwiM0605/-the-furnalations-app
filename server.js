@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const bcrypt = require("bcryptjs");
 const cors = require("cors");
+const { createHash, randomBytes } = require("node:crypto");
 const express = require("express");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
@@ -15,7 +16,25 @@ const configSchema = z.object({
   MONGODB_URI: z.string().min(1),
   MONGODB_DB: z.string().min(1),
   JWT_SECRET: z.string().min(32),
-  FRONTEND_ORIGIN: z.string().url()
+  FRONTEND_ORIGIN: z.string().url(),
+  RESEND_API_KEY: z.string().min(1).optional(),
+  EMAIL_FROM: z.string().min(1).optional(),
+  FRONTEND_URL: z.string().url().optional()
+}).superRefine((config, context) => {
+  if (config.RESEND_API_KEY && !config.EMAIL_FROM) {
+    context.addIssue({
+      code: "custom",
+      path: ["EMAIL_FROM"],
+      message: "EMAIL_FROM is required when RESEND_API_KEY is configured."
+    });
+  }
+  if (config.RESEND_API_KEY && !config.FRONTEND_URL) {
+    context.addIssue({
+      code: "custom",
+      path: ["FRONTEND_URL"],
+      message: "FRONTEND_URL is required when RESEND_API_KEY is configured."
+    });
+  }
 });
 
 const parsedConfig = configSchema.safeParse(process.env);
@@ -24,8 +43,18 @@ if (!parsedConfig.success) {
   process.exit(1);
 }
 
-const { PORT, NODE_ENV, MONGODB_URI, MONGODB_DB, JWT_SECRET } = parsedConfig.data;
+const {
+  PORT,
+  NODE_ENV,
+  MONGODB_URI,
+  MONGODB_DB,
+  JWT_SECRET,
+  RESEND_API_KEY,
+  EMAIL_FROM,
+  FRONTEND_URL
+} = parsedConfig.data;
 const FRONTEND_ORIGIN = new URL(parsedConfig.data.FRONTEND_ORIGIN).origin;
+const emailVerificationEnabled = Boolean(RESEND_API_KEY && EMAIL_FROM && FRONTEND_URL);
 const app = express();
 const mongoClient = new MongoClient(MONGODB_URI, { serverSelectionTimeoutMS: 10000 });
 const userInputSchema = z.object({
@@ -37,6 +66,12 @@ const userInputSchema = z.object({
 const signUpInputSchema = userInputSchema.extend({
   displayName: z.string().trim().min(1).max(60)
 });
+const verificationInputSchema = z.object({
+  token: z.string().regex(/^[a-f0-9]{64}$/i)
+}).strict();
+const emailInputSchema = z.object({
+  email: userInputSchema.shape.email
+}).strict();
 const dateKeySchema = z.string()
   .regex(/^\d{4}-\d{2}-\d{2}$/)
   .refine(value => {
@@ -91,6 +126,13 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: "Too many sign-in attempts. Please wait a few minutes and try again." }
 });
+const verificationEmailLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 3,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { error: "Too many verification email requests. Please try again later." }
+});
 
 function publicUser(user) {
   return {
@@ -115,6 +157,59 @@ function respondWithSession(res, user, status = 200) {
     expiresIn: 3600,
     user: publicUser(user)
   });
+}
+
+function hashVerificationToken(token) {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+function escapeHtml(value) {
+  return value.replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#39;"
+  })[character]);
+}
+
+async function sendVerificationEmail(user, token) {
+  const verificationUrl = new URL("login.html", `${FRONTEND_URL.replace(/\/+$/, "")}/`);
+  verificationUrl.hash = new URLSearchParams({ verify: token }).toString();
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from: EMAIL_FROM,
+      to: [user.email],
+      subject: "Verify your Furnalations account",
+      text: `Hello ${user.displayName},\n\nVerify your email address to activate your Furnalations account:\n${verificationUrl}\n\nThis link expires in 24 hours. If you did not create this account, you can ignore this email.`,
+      html: `<p>Hello ${escapeHtml(user.displayName)},</p><p>Verify your email address to activate your Furnalations account:</p><p><a href="${verificationUrl.toString()}">Verify my email address</a></p><p>This link expires in 24 hours. If you did not create this account, you can ignore this email.</p>`
+    })
+  });
+  if (!response.ok) {
+    throw new Error(`Resend returned HTTP ${response.status}.`);
+  }
+}
+
+async function issueVerificationEmail(user) {
+  const token = randomBytes(32).toString("hex");
+  const result = await users.updateOne(
+    { _id: user._id, emailVerified: false },
+    {
+      $set: {
+        emailVerificationTokenHash: hashVerificationToken(token),
+        emailVerificationExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      }
+    }
+  );
+  if (!result.matchedCount) {
+    throw new Error("Account is already verified or is no longer available.");
+  }
+  await sendVerificationEmail(user, token);
 }
 
 function validateBody(schema, req, res) {
@@ -176,16 +271,88 @@ app.post("/api/auth/signup", authLimiter, async (req, res, next) => {
       email: input.email,
       displayName: input.displayName,
       passwordHash: await bcrypt.hash(input.password, 12),
+      emailVerified: !emailVerificationEnabled,
       createdAt: new Date()
     };
     const result = await users.insertOne(user);
     user._id = result.insertedId;
+    if (emailVerificationEnabled) {
+      try {
+        await issueVerificationEmail(user);
+      } catch (error) {
+        console.error("Verification email delivery failed:", error.message);
+        res.status(502).json({
+          error: "Your account was created, but the verification email could not be sent. Please try resending it.",
+          code: "VERIFICATION_EMAIL_FAILED"
+        });
+        return;
+      }
+      res.status(201).json({ verificationRequired: true });
+      return;
+    }
     respondWithSession(res, user, 201);
   } catch (error) {
     if (error.code === 11000) {
       res.status(409).json({ error: "An account with that email already exists. Try signing in instead." });
       return;
     }
+    next(error);
+  }
+});
+
+app.post("/api/auth/verify-email", authLimiter, async (req, res, next) => {
+  if (!emailVerificationEnabled) {
+    res.status(503).json({ error: "Email verification is not configured yet." });
+    return;
+  }
+  const input = validateBody(verificationInputSchema, req, res);
+  if (!input) return;
+
+  try {
+    const now = new Date();
+    const result = await users.updateOne(
+      {
+        emailVerified: false,
+        emailVerificationTokenHash: hashVerificationToken(input.token),
+        emailVerificationExpiresAt: { $gt: now }
+      },
+      {
+        $set: { emailVerified: true, emailVerifiedAt: now },
+        $unset: { emailVerificationTokenHash: "", emailVerificationExpiresAt: "" }
+      }
+    );
+    if (!result.matchedCount) {
+      res.status(400).json({ error: "This verification link is invalid or has expired. Request a new email and try again." });
+      return;
+    }
+    res.json({ verified: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/auth/resend-verification", verificationEmailLimiter, async (req, res, next) => {
+  if (!emailVerificationEnabled) {
+    res.status(503).json({ error: "Email verification is not configured yet." });
+    return;
+  }
+  const input = validateBody(emailInputSchema, req, res);
+  if (!input) return;
+
+  try {
+    const user = await users.findOne(
+      { email: input.email, emailVerified: false },
+      { projection: { _id: 1, email: 1, displayName: 1 } }
+    );
+    if (user) {
+      try {
+        await issueVerificationEmail(user);
+      } catch (error) {
+        console.error("Verification email delivery failed:", error.message);
+      }
+    }
+    res.json({ message: "If an unverified account exists for that address, a verification email has been sent." });
+  } catch (error) {
     next(error);
   }
 });
@@ -201,6 +368,13 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
       res.status(401).json({ error: "Invalid email or password." });
       return;
     }
+    if (!user.emailVerified) {
+      res.status(403).json({
+        error: "Please verify your email address before signing in. Check your inbox or request a new verification email.",
+        code: "EMAIL_NOT_VERIFIED"
+      });
+      return;
+    }
     respondWithSession(res, user);
   } catch (error) {
     next(error);
@@ -212,6 +386,13 @@ app.get("/api/auth/me", requireAccessToken, async (req, res, next) => {
     const user = await users.findOne({ _id: req.userId });
     if (!user) {
       res.status(401).json({ error: "This account is no longer available. Please sign in again." });
+      return;
+    }
+    if (!user.emailVerified) {
+      res.status(403).json({
+        error: "Please verify your email address before signing in.",
+        code: "EMAIL_NOT_VERIFIED"
+      });
       return;
     }
     res.json({ user: publicUser(user) });
@@ -277,6 +458,10 @@ async function start() {
   progress = database.collection("progress");
   await users.createIndex({ email: 1 }, { unique: true, name: "unique_user_email" });
   await progress.createIndex({ userId: 1 }, { unique: true, name: "unique_progress_user" });
+  await users.updateMany(
+    { emailVerified: { $exists: false } },
+    { $set: { emailVerified: true, emailVerifiedAt: new Date() } }
+  );
 
   const host = NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1";
   const server = app.listen(PORT, host, () => {

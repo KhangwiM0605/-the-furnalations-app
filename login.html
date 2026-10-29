@@ -90,6 +90,14 @@
           <button class="text-button sign-out-button" id="signOutButton" type="button">Sign out</button>
         </section>
 
+        <section class="verification-panel" id="verificationPanel" aria-live="polite" hidden>
+          <p class="verification-message" id="verificationMessage"></p>
+          <label class="field-label" for="verificationEmail">Email address</label>
+          <input class="auth-input" id="verificationEmail" type="email" placeholder="you@example.com" autocomplete="email" required>
+          <button class="auth-submit resend-verification" id="resendVerification" type="button">Resend verification email <span aria-hidden="true">↗</span></button>
+          <button class="text-button return-to-sign-in" id="returnToSignIn" type="button">Return to sign in</button>
+        </section>
+
         <p class="login-privacy">Sign in to sync check-ins, reflections, challenges, and saved rules across devices while online. Signed-out progress stays on this device.</p>
       </div>
     </section>

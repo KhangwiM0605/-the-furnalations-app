@@ -63,7 +63,7 @@ a { color: inherit; text-decoration: none; }
 .password-field > .auth-input { padding-right: 58px; }
 .password-toggle { position: absolute; top: 12px; right: 12px; padding: 3px 0; border: 0; background: none; color: var(--login-muted); cursor: pointer; font-size: 8px; font-weight: 700; letter-spacing: 1px; }
 .signup-name-field { margin-bottom: 17px; }
-.signup-name-field[hidden], .confirm-field[hidden], .session-note[hidden], .auth-tabs[hidden], .auth-form[hidden], .signed-in-panel[hidden], .forgot-password[hidden] { display: none; }
+.signup-name-field[hidden], .confirm-field[hidden], .session-note[hidden], .auth-tabs[hidden], .auth-form[hidden], .signed-in-panel[hidden], .verification-panel[hidden], .forgot-password[hidden] { display: none; }
 .session-note { margin: 14px 0 18px; color: var(--login-dim); font-size: 9px; line-height: 1.6; }
 .auth-submit { display: flex; width: 100%; align-items: center; justify-content: space-between; min-height: 48px; padding: 0 15px; border: 1px solid var(--login-red); background: var(--login-red); cursor: pointer; font-size: 10px; letter-spacing: .6px; transition: background .2s, border-color .2s; }
 .auth-submit:hover:not(:disabled) { border-color: var(--login-bright); background: var(--login-bright); }
@@ -75,6 +75,9 @@ a { color: inherit; text-decoration: none; }
 .continue-link { align-items: center; }
 .sign-out-button { margin-top: 17px; }
 .sign-out-button:hover { color: #ffc09d; }
+.verification-message { margin: 16px 0; color: var(--login-muted); font-size: 12px; line-height: 1.7; }
+.resend-verification { margin-top: 14px; }
+.return-to-sign-in { margin-top: 16px; }
 .login-privacy { margin: 15px 0 0; color: var(--login-dim); font-size: 9px; line-height: 1.7; text-align: center; }
 :focus-visible { outline: 2px solid #f08b52; outline-offset: 3px; }
 @media (max-width: 860px) {
