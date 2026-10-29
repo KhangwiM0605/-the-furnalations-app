@@ -14,14 +14,14 @@ How to run:
 Notes:
 - Saved rules use browser localStorage on the current device/browser.
 - Google Fonts require an internet connection; fallback fonts are included.
-- The MongoDB account API supports sign-up and sign-in after it is configured and deployed. Check-ins, reflections, challenges, and saved rules are still device-local.
+- The MongoDB account API supports account sign-up, sign-in, and online progress sync. Signed-out progress stays local to the current device/browser.
 
 
 BROTHERHOOD STREAK (NEW)
 - Open the Daily Check-in section to see current streak, personal best, total check-ins and the monthly calendar.
 - Check in once per South African calendar day (Africa/Johannesburg). An optional reflection can be saved with the check-in.
 - Signed-out data is saved in this browser using localStorage. When signed in and online, check-ins and reflections sync to the account API. Clearing browser data may erase signed-out progress.
-- Account sign-in is available through the MongoDB API described below. Shared streaks and other cloud-synced progress are not implemented; production progress tracking should be validated by the server, not trusted to browser-calculated values.
+- Account sign-in and progress sync use the MongoDB API described below. The API validates account ownership and progress shapes, but daily streak and challenge rules remain browser-calculated and should be validated server-side before being treated as authoritative.
 
 RUN LOCALLY
 1. Extract the ZIP.
