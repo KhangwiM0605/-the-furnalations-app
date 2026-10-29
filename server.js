@@ -37,8 +37,24 @@ const userInputSchema = z.object({
 const signUpInputSchema = userInputSchema.extend({
   displayName: z.string().trim().min(1).max(60)
 });
+const dateKeySchema = z.string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine(value => {
+    const date = new Date(`${value}T00:00:00.000Z`);
+    return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value;
+  });
+const progressSchema = z.object({
+  checkins: z.array(z.object({
+    date: dateKeySchema,
+    reflection: z.string().max(500)
+  }).strict()).max(3000).refine(entries => new Set(entries.map(entry => entry.date)).size === entries.length),
+  challengeHistory: z.record(dateKeySchema, z.literal(true)).refine(entries => Object.keys(entries).length <= 3000),
+  savedRules: z.array(z.number().int().min(1).max(12)).max(12)
+    .refine(rules => new Set(rules).size === rules.length)
+}).strict();
 
 let users;
+let progress;
 
 app.disable("x-powered-by");
 if (NODE_ENV === "production") app.set("trust proxy", 1);
@@ -62,11 +78,11 @@ app.use(cors({
     }
     callback(new Error("Origin is not allowed by CORS."));
   },
-  methods: ["GET", "POST"],
+  methods: ["GET", "POST", "PUT"],
   allowedHeaders: ["Content-Type", "Authorization"],
   maxAge: 600
 }));
-app.use(express.json({ limit: "10kb" }));
+app.use(express.json({ limit: "2mb" }));
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -204,6 +220,33 @@ app.get("/api/auth/me", requireAccessToken, async (req, res, next) => {
   }
 });
 
+app.get("/api/progress", requireAccessToken, async (req, res, next) => {
+  try {
+    const savedProgress = await progress.findOne({ userId: req.userId }, { projection: { _id: 0, checkins: 1, challengeHistory: 1, savedRules: 1 } });
+    res.json({
+      progress: savedProgress || { checkins: [], challengeHistory: {}, savedRules: [] }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.put("/api/progress", requireAccessToken, async (req, res, next) => {
+  const input = validateBody(progressSchema, req, res);
+  if (!input) return;
+
+  try {
+    await progress.replaceOne(
+      { userId: req.userId },
+      { userId: req.userId, ...input, updatedAt: new Date() },
+      { upsert: true }
+    );
+    res.json({ progress: input });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.use("/api", (_req, res) => {
   res.status(404).json({ error: "API route not found." });
 });
@@ -231,7 +274,9 @@ async function start() {
   const database = mongoClient.db(MONGODB_DB);
   await database.command({ ping: 1 });
   users = database.collection("users");
+  progress = database.collection("progress");
   await users.createIndex({ email: 1 }, { unique: true, name: "unique_user_email" });
+  await progress.createIndex({ userId: 1 }, { unique: true, name: "unique_progress_user" });
 
   const host = NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1";
   const server = app.listen(PORT, host, () => {

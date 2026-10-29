@@ -16,7 +16,31 @@ const rules = [
 const grid = document.getElementById("rulesGrid");
 const search = document.getElementById("ruleSearch");
 const emptyState = document.getElementById("emptyState");
-const savedKey = "furnalations-saved-rules";
+const accountSessionStorageKey = "furnalations-account-session";
+function readAccountSession() {
+  try {
+    const session = JSON.parse(sessionStorage.getItem(accountSessionStorageKey) || "null");
+    if (session?.accessToken && typeof session.user?.id === "string"
+      && Number.isFinite(session.expiresAt) && session.expiresAt > Date.now()) return session;
+  } catch (error) {
+    console.error("Could not read the account session for progress sync:", error);
+  }
+  return null;
+}
+const accountSession = readAccountSession();
+const accountStoragePrefix = accountSession
+  ? `furnalations-account-${encodeURIComponent(accountSession.user.id)}`
+  : "furnalations";
+const progressApiBaseUrl = (window.FURNALATIONS_API_BASE_URL
+  || (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? "http://localhost:3000" : ""))
+  .replace(/\/+$/, "");
+const accountProgressPendingKey = accountSession ? `${accountStoragePrefix}-progress-pending` : "";
+const mainContent = document.querySelector("main");
+if (accountSession) {
+  mainContent.inert = true;
+  mainContent.setAttribute("aria-busy", "true");
+}
+const savedKey = accountSession ? `${accountStoragePrefix}-saved-rules` : "furnalations-saved-rules";
 let activeFilter = "all";
 let saved = new Set();
 try {
@@ -104,9 +128,18 @@ grid.addEventListener("click", event => {
   const button = event.target.closest(".save-rule");
   if (!button) return;
   const id = Number(button.dataset.id);
+  const previousSaved = new Set(saved);
   if (saved.has(id)) { saved.delete(id); toast("Rule removed from your saved list."); }
   else { saved.add(id); toast("Rule saved. Keep it close, brother."); }
-  localStorage.setItem(savedKey, JSON.stringify([...saved]));
+  try {
+    localStorage.setItem(savedKey, JSON.stringify([...saved]));
+  } catch (error) {
+    saved = previousSaved;
+    toast("Could not save this rule. Check your browser storage settings.");
+    renderRules();
+    return;
+  }
+  scheduleProgressSync();
   renderRules();
 });
 document.querySelectorAll(".filter-btn").forEach(button => button.addEventListener("click", () => {
@@ -142,7 +175,9 @@ renderRules();
 
 
 // Brotherhood streak prototype. Dates are always calculated in South African time.
-const checkinStorageKey = "furnalations-daily-checkins-v1";
+const checkinStorageKey = accountSession
+  ? `${accountStoragePrefix}-daily-checkins-v1`
+  : "furnalations-daily-checkins-v1";
 const checkinButton = document.getElementById("checkinButton");
 const reflectionInput = document.getElementById("dailyReflection");
 const calendarEl = document.getElementById("checkinCalendar");
@@ -172,7 +207,11 @@ function loadCheckins() {
 }
 let checkins = loadCheckins();
 function saveCheckins() {
-  try { localStorage.setItem(checkinStorageKey, JSON.stringify(checkins)); return true; }
+  try {
+    localStorage.setItem(checkinStorageKey, JSON.stringify(checkins));
+    scheduleProgressSync();
+    return true;
+  }
   catch (error) { toast("Could not save this check-in. Check your browser storage settings."); return false; }
 }
 function getStreakStats() {
@@ -289,7 +328,9 @@ renderStreak();
 
 
 // Daily Forge challenge and achievement layer. All day keys use South African time.
-const challengeStorageKey = "furnalations-challenges-v1";
+const challengeStorageKey = accountSession
+  ? `${accountStoragePrefix}-challenges-v1`
+  : "furnalations-challenges-v1";
 const challenges = [
   { title: "Keep your word.", description: "Choose one promise you have made to yourself and take a practical step to honour it today.", scripture: "“Let your yea be yea.” — Matthew 5:37 (KJV)" },
   { title: "Put God first.", description: "Set aside a few quiet minutes to pray or read Scripture before letting the noise of the day lead you.", scripture: "“But seek ye first the kingdom of God.” — Matthew 6:33 (KJV)" },
@@ -316,7 +357,11 @@ function readChallengeHistory() {
 }
 let challengeHistory = readChallengeHistory();
 function saveChallengeHistory() {
-  try { localStorage.setItem(challengeStorageKey, JSON.stringify(challengeHistory)); return true; }
+  try {
+    localStorage.setItem(challengeStorageKey, JSON.stringify(challengeHistory));
+    scheduleProgressSync();
+    return true;
+  }
   catch (error) { toast("Could not save the challenge. Check your browser storage settings."); return false; }
 }
 function getChallengeForDate(dateKey) {
@@ -379,3 +424,145 @@ document.getElementById("completeChallenge").addEventListener("click", () => {
 });
 renderDailyForge();
 renderDashboard();
+
+let progressSyncReady = false;
+let progressSyncTimer;
+let progressSyncRevision = 0;
+let progressSyncQueue = Promise.resolve();
+
+function isValidProgressDate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value;
+}
+
+function getLocalProgressSnapshot() {
+  return {
+    checkins,
+    challengeHistory,
+    savedRules: [...saved]
+  };
+}
+
+function normalizeProgress(value) {
+  if (!value || typeof value !== "object") throw new Error("The account server returned invalid progress data.");
+  const normalizedCheckins = Array.isArray(value.checkins)
+    ? value.checkins.filter(item => item && isValidProgressDate(item.date) && typeof item.reflection === "string")
+      .map(item => ({ date: item.date, reflection: item.reflection.slice(0, 500) }))
+      .filter((item, index, all) => all.findIndex(other => other.date === item.date) === index)
+      .sort((a, b) => a.date.localeCompare(b.date))
+    : [];
+  const normalizedChallenges = {};
+  if (value.challengeHistory && typeof value.challengeHistory === "object" && !Array.isArray(value.challengeHistory)) {
+    for (const [date, completed] of Object.entries(value.challengeHistory)) {
+      if (isValidProgressDate(date) && completed === true) normalizedChallenges[date] = true;
+    }
+  }
+  const normalizedSavedRules = Array.isArray(value.savedRules)
+    ? [...new Set(value.savedRules.filter(id => Number.isInteger(id) && rules.some(rule => rule.id === id)))]
+    : [];
+  return {
+    checkins: normalizedCheckins,
+    challengeHistory: normalizedChallenges,
+    savedRules: normalizedSavedRules
+  };
+}
+
+function persistProgressSnapshot(snapshot) {
+  try {
+    localStorage.setItem(checkinStorageKey, JSON.stringify(snapshot.checkins));
+    localStorage.setItem(challengeStorageKey, JSON.stringify(snapshot.challengeHistory));
+    localStorage.setItem(savedKey, JSON.stringify(snapshot.savedRules));
+  } catch (error) {
+    throw new Error("Progress could not be saved in this browser. Check its storage settings.");
+  }
+}
+
+async function putProgressSnapshot(snapshot) {
+  const response = await fetch(`${progressApiBaseUrl}/api/progress`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accountSession.accessToken}`
+    },
+    body: JSON.stringify(snapshot)
+  });
+  const result = await response.json().catch(() => null);
+  if (!response.ok) {
+    if (response.status === 401) throw new Error("Your session expired. Sign in again to sync progress.");
+    throw new Error(result?.error || "The account server could not save your progress.");
+  }
+}
+
+function scheduleProgressSync() {
+  if (!accountSession || !progressSyncReady) return;
+  try {
+    localStorage.setItem(accountProgressPendingKey, "true");
+  } catch (error) {
+    toast("Progress is saved on this device, but cloud sync could not be queued.");
+    return;
+  }
+
+  progressSyncRevision++;
+  const revision = progressSyncRevision;
+  clearTimeout(progressSyncTimer);
+  progressSyncTimer = setTimeout(() => {
+    const snapshot = getLocalProgressSnapshot();
+    progressSyncQueue = progressSyncQueue.then(async () => {
+      await putProgressSnapshot(snapshot);
+      if (revision === progressSyncRevision) localStorage.removeItem(accountProgressPendingKey);
+    }).catch(error => {
+      if (error.message.includes("session expired")) {
+        progressSyncReady = false;
+        mainContent.inert = true;
+        mainContent.setAttribute("aria-busy", "true");
+        try { sessionStorage.removeItem(accountSessionStorageKey); }
+        catch (storageError) { console.error("Could not clear the expired account session:", storageError); }
+      }
+      toast(`${error.message} Your change remains saved on this device.`);
+    });
+  }, 400);
+}
+
+async function initializeAccountProgress() {
+  if (!accountSession) return;
+  if (!progressApiBaseUrl) {
+    toast("The account API is not configured. Sign-in is needed before progress can sync.");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${progressApiBaseUrl}/api/progress`, {
+      headers: { Authorization: `Bearer ${accountSession.accessToken}` }
+    });
+    const result = await response.json().catch(() => null);
+    if (!response.ok) {
+      if (response.status === 401) throw new Error("Your session expired. Sign in again to load account progress.");
+      throw new Error(result?.error || "Your account progress could not be loaded.");
+    }
+
+    if (localStorage.getItem(accountProgressPendingKey) === "true") {
+      await putProgressSnapshot(getLocalProgressSnapshot());
+      localStorage.removeItem(accountProgressPendingKey);
+    } else {
+      const snapshot = normalizeProgress(result.progress);
+      persistProgressSnapshot(snapshot);
+      checkins = snapshot.checkins;
+      challengeHistory = snapshot.challengeHistory;
+      saved = new Set(snapshot.savedRules);
+    }
+
+    progressSyncReady = true;
+    mainContent.inert = false;
+    mainContent.removeAttribute("aria-busy");
+    renderRules();
+    renderStreak();
+    renderDailyForge();
+    renderDashboard();
+  } catch (error) {
+    console.error("Account progress sync failed:", error);
+    toast(`${error.message} Reload after the connection is fixed; account progress has not been replaced.`);
+  }
+}
+
+initializeAccountProgress();
