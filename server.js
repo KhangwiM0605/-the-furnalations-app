@@ -45,7 +45,18 @@ if (NODE_ENV === "production") app.set("trust proxy", 1);
 app.use(helmet());
 app.use(cors({
   origin(origin, callback) {
-    if (!origin || origin === FRONTEND_ORIGIN) {
+    let isLocalDevelopmentOrigin = false;
+    if (origin && NODE_ENV === "development") {
+      try {
+        const url = new URL(origin);
+        isLocalDevelopmentOrigin = url.protocol === "http:"
+          && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+      } catch {
+        isLocalDevelopmentOrigin = false;
+      }
+    }
+
+    if (!origin || origin === FRONTEND_ORIGIN || isLocalDevelopmentOrigin) {
       callback(null, true);
       return;
     }
@@ -222,7 +233,8 @@ async function start() {
   users = database.collection("users");
   await users.createIndex({ email: 1 }, { unique: true, name: "unique_user_email" });
 
-  const server = app.listen(PORT, () => {
+  const host = NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1";
+  const server = app.listen(PORT, host, () => {
     console.log(`Furnalations API listening on port ${PORT} (${NODE_ENV}).`);
   });
 
